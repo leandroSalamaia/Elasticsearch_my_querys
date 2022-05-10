@@ -1,0 +1,68 @@
+"script": {
+    "lang": "painless",
+    "source": """
+    
+      //function declaration
+      String replace(String word, String oldValue, String newValue) {
+        String[] pieces = word.splitOnToken(oldValue);
+        int lastElIndex = pieces.length-1;
+        pieces[lastElIndex] = newValue;
+        def list = Arrays.asList(pieces);
+        return String.join('',list);
+      }
+      
+      def str = replace(doc[params.field].value,"'","");
+
+      def str2= str.splitOnToken('value: ')[1];
+      def temp = str2.splitOnToken(';');
+      int count = 0;
+      
+      ArrayList arr1 = [];
+      for (int i = 0; i < temp.length;i++){
+        def str3 = temp[i].splitOnToken('|');
+        def str4 = str3[0].splitOnToken(':');
+        Map map = new HashMap();
+        map['display'] = Integer.parseInt(str4[1]);   
+        map['value'] = str3[2]; 
+        arr1.add(count, map);
+        count = count + 1;
+      }
+      
+      ArrayList arr2 = [];
+      int stage = 1;
+      count = 0;
+      int row = 1;
+      for (int i = 0; i <= 30;i++) {
+        def zone = i + 1;
+        Map map = new HashMap();
+        map['zone'] = zone;
+        map['stage'] = stage; 
+        map['row'] = row;
+        map['sessions'] ="";
+        map['status'] = '#D8D8D8'; 
+        
+        
+        for (int j = 0; j < arr1.length;j++) {
+          if(arr1[j]['display'] == zone){
+            map['sessions'] = arr1[j]['value'];
+            map['status'] = 'green';
+            if(arr1[j]['display'] == 1){
+              map['status'] = 'red';
+            }
+          }
+        }
+        
+        stage = stage + 1;
+        
+        if(stage == 7){
+          stage = 1;
+          row = row + 1;
+        }
+        
+        arr2.add(count,map);
+        count = count + 1;
+      }
+      
+      return arr2;
+    """
+}
