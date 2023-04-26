@@ -1,0 +1,41 @@
+//Cria uma pipeline para o Palantir
+PUT _ingest/pipeline/palantir_pipeline
+{
+  "description": "Pipeline de ingestão para Palantir logs",
+  "processors": [
+    {
+      "grok": {
+        "if": "ctx.containsKey('message') && ctx.message =~ /.*Function:(?<function>[^\\s]*)\\s.*Status:(?<status>[^\\s]*)\\s.*Card:(?<card>[^\\s]*)/",
+        "field": "message",
+        "patterns": [
+          ".*Function:(?<function>[^\\s]*)\\s.*Status:(?<status>[^\\s]*)\\s.*Card:(?<card>[^\\s]*)"
+        ]
+      }
+    }
+  ]
+}
+
+//Cria uma pipeline para o PalantirQuery
+PUT _ingest/pipeline/palantirQuery_pipeline
+{
+  "description": "Pipeline de ingestão para palantirQuery logs",
+  "processors": [
+    {
+      "grok": {
+        "if": "ctx.containsKey('message') && ctx.message =~ /.*Metodo:(?<metodo>[^\\s]*)\\s.*Time:(?<time>[^\\s]*)/",
+        "field": "message",
+        "patterns": [
+          ".*Metodo:(?<metodo>[^\\s]*)\\s.*Time:(?<time>[^\\s]*)"
+        ]
+      }
+    }
+  ]
+}
+
+//Configura o Cluster para Receber 500 compilações de script por minuto
+PUT /_cluster/settings
+{
+    "transient": {
+        "script.max_compilations_rate": "500/1m"
+    }
+}
